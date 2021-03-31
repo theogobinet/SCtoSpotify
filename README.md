@@ -1,4 +1,4 @@
-`SCtoSpotify` is tool that creates Spotify playlists from Sens Critique lists.
+`SCtoSpotify` is a tool that creates Spotify playlists from Sens Critique lists.
 
 ## Table of content
 
