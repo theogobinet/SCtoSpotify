@@ -15,6 +15,11 @@ parser.add_argument("-s", "--ignore-sc-uri",
 parser.add_argument("-d", "--disable-check",
                     action="store_true", dest="igCheck", default=False,
                     help="for top pages, disable the Spotify URI verification when URI is obtained through SensCritique, faster but risk of out of date URI")
+parser.add_argument("-c", "--client-id", dest="cID", default=None,
+                    help="client ID Spotify API key, you can also put it directly in spotipy_oath.py")
+parser.add_argument("-e", "--client-secret", dest="cSec", default=None,
+                    help="client Secret Spotify API key, you can also put it directly in spotipy_oath.py")
+                    
 
 args = parser.parse_args()
 
@@ -24,7 +29,7 @@ except ValueError:
     print('Wrong page ID')
     exit()
 
-sp, userID = core.spotipy_oath.getSpotifyClient()
+sp, userID = core.spotipy_oath.getSpotifyClient(args.cID, args.cSec)
 soup = core.BeautifulSoup(core.requests.get(f'https://www.senscritique.com/sc2/liste/{args.pid}').text, features="html.parser")
 
 try:
