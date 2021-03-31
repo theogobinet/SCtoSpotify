@@ -19,7 +19,7 @@ Faster for Sens Critique lists (URL like `senscritique.com/liste/xxx/listID`) th
 Clone the repo and run:
 
 ```
-    pip install -r requirements.txt 
+pip install -r requirements.txt 
 ```
 
 ## Examples
