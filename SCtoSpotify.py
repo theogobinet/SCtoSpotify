@@ -12,14 +12,6 @@ parser.add_argument("-i", "--ignore",
 parser.add_argument("-s", "--ignore-sc-uri", 
                     action="store_true", dest="igSC", default=False,
                     help="for top pages, don't try to get the Spotify URI from SensCritique track page, faster but less efficient")                
-parser.add_argument("-d", "--disable-check",
-                    action="store_true", dest="igCheck", default=False,
-                    help="for top pages, disable the Spotify URI verification when URI is obtained through SensCritique, faster but risk of out of date URI")
-parser.add_argument("-c", "--client-id", dest="cID", default=None,
-                    help="client ID Spotify API key, you can also put it directly in spotipy_oath.py")
-parser.add_argument("-e", "--client-secret", dest="cSec", default=None,
-                    help="client Secret Spotify API key, you can also put it directly in spotipy_oath.py")
-                    
 
 args = parser.parse_args()
 
@@ -29,7 +21,7 @@ except ValueError:
     print('Wrong page ID')
     exit()
 
-sp, userID = core.spotipy_oath.getSpotifyClient(args.cID, args.cSec)
+sp, userID = core.spotipy_oath.getSpotifyClient()
 soup = core.BeautifulSoup(core.requests.get(f'https://www.senscritique.com/sc2/liste/{args.pid}').text, features="html.parser")
 
 try:
@@ -38,7 +30,7 @@ except AttributeError:
     print ('No list found at the given ID')
     exit()
 
-tracks = core.scGetTracks(sp, args.pid, core.scGetType(soup), soup, not args.igSC, not args.igCheck, args.igNF)
+tracks = core.scGetTracks(sp, args.pid, core.scGetType(soup), soup, not args.igSC, args.igNF)
 
 if not tracks:
     print ('No tracks has been found on the given list')

@@ -61,7 +61,7 @@ def selectTrack(sp, trackList, track, artist):
 def findSpotifyID(sp, track, artist, firstLookup=False, ignoreNF=False):
 
     if firstLookup:
-        initialSearch = searchSpotify(track, 'track')
+        initialSearch = searchSpotify(sp, track, 'track')
         for idx, cTr in enumerate(initialSearch[0]):
             if unidecode(cTr[0].lower()) == unidecode(track.lower()) and unidecode(cTr[1].lower()) == unidecode(artist.lower()):
                 print(f"\tSame matching track found on Spotify")
@@ -82,7 +82,7 @@ def findSpotifyID(sp, track, artist, firstLookup=False, ignoreNF=False):
     elif selection == 2:
         interactions.clear()
         print(f"List of corresponding tracks for '{track}' of '{artist}':")
-        return selectTrack(sp, searchSpotify(track, 'track'), track, artist) 
+        return selectTrack(sp, searchSpotify(sp, track, 'track'), track, artist) 
 
     elif selection == 3:
         results = searchSpotify(sp, artist)
@@ -97,7 +97,7 @@ def findSpotifyID(sp, track, artist, firstLookup=False, ignoreNF=False):
         selection = interactions.getInt(1, 'artist', len(results[0]) + 1)
 
         if selection == len(results[0]) + 1:
-            return findSpotifyID(track, artist, True)
+            return findSpotifyID(sp, track, artist, True)
         else:
             artistID = results[1][selection-1]
             interactions.clear()
@@ -111,21 +111,18 @@ def findSpotifyID(sp, track, artist, firstLookup=False, ignoreNF=False):
         
         return spotId
 
-def scUrlToSpotID(sp, url, verifySpotURI):
+def scUrlToSpotID(sp, url):
     print(f"\tGetting spotify URI from 'https://www.senscritique.com{url}'")
     soup = BeautifulSoup(requests.get(f'https://www.senscritique.com{url}').text, features="html.parser")
     spotID = soup.find('div', class_='d-media-music')
 
     if spotID:
-        # Data from SensCritique can be expired so we may need to check that the URI still exist
-        if verifySpotURI:
-            try: 
-                sp.track(spotID['data-sc-play-value'])
-                return spotID['data-sc-play-value']
-            except sp.SpotifyException:
-                return None
-        else:
+        # Data from SensCritique can be expired so we need to check that the URI still exist
+        try: 
+            sp.track(spotID['data-sc-play-value'])
             return spotID['data-sc-play-value']
+        except sp.SpotifyException:
+            return None
     else:
         return None
 
@@ -133,7 +130,7 @@ def scGetType(soup):
     # Expected: 'Sondages', 'Listes'
     return soup.find_all('a', class_='lahe-breadcrumb-anchor')[-1].text
 
-def scGetTracks(sp, pid, lType, soup, URIfromSC=False, verifySpotURI=True, ignoreNF=False):
+def scGetTracks(sp, pid, lType, soup, URIfromSC=False, ignoreNF=False):
     tracks = []
 
     if lType == 'Sondages':
@@ -157,13 +154,13 @@ def scGetTracks(sp, pid, lType, soup, URIfromSC=False, verifySpotURI=True, ignor
                         spotUrl = None
 
                         if URIfromSC:
-                            spotUrl = scUrlToSpotID(sp, el.find('a', class_='elco-anchor')['href'], verifySpotURI)
+                            spotUrl = scUrlToSpotID(sp, el.find('a', class_='elco-anchor')['href'])
 
                             if not spotUrl:
                                 print("\tFailed to get URI for track from SensCritique")
 
                         if not spotUrl:
-                            spotUrl = findSpotifyID(title, artist, True, ignoreNF)
+                            spotUrl = findSpotifyID(sp, title, artist, True, ignoreNF)
 
                             if not spotUrl:
                                 print(f"\tTrack is ignored and will not be added to the playlist")
@@ -196,7 +193,7 @@ def scGetTracks(sp, pid, lType, soup, URIfromSC=False, verifySpotURI=True, ignor
 
                     if not spotUrl:
                         print("\tFailed to get URI for track from SensCritique")
-                        spotUrl = findSpotifyID(title, artist, True, ignoreNF)
+                        spotUrl = findSpotifyID(sp, title, artist, True, ignoreNF)
 
                         if not spotUrl:
                             print(f"\tTrack '{title}' is ignored and will not be added to the playlist")
