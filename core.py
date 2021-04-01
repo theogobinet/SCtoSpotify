@@ -136,13 +136,17 @@ def scGetTracks(sp, pid, lType, soup, URIfromSC=False, ignoreNF=False):
     if lType == 'Sondages':
 
         itemPerPage = len(soup.find_all('li', class_='elpo-item'))
-        itemNumbers = 100
-        itemType = soup.find('a', class_='elco-anchor')['href'].split('/')[1] 
+        itemType = soup.find('a', class_='elco-anchor')['href'].split('/')[1]
+        pageNumber = 0
 
         if itemType == 'morceau':
-                for i in range(1, itemNumbers//itemPerPage + (itemNumbers % itemPerPage > 0) + 1):
-                    if i != 1:
-                        soup = BeautifulSoup(requests.get(f'https://www.senscritique.com/sc2/top/resultats/{pid}/page-{i}.ajax?limit=1000').text, features="html.parser")
+                while itemPerPage != 0:
+
+                    pageNumber += 1
+
+                    if pageNumber != 1:
+                        soup = BeautifulSoup(requests.get(f'https://www.senscritique.com/sc2/top/resultats/{pid}/page-{pageNumber}.ajax?limit=1000', headers= {"x-requested-with": "XMLHttpRequest"}).text, features="html.parser")
+                        itemPerPage = len(soup.find_all('li', class_='elpo-item'))
 
                     for el in soup.find_all('li', class_='elpo-item'):
 
